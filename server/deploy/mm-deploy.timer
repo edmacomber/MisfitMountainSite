@@ -1,0 +1,13 @@
+[Unit]
+Description=Periodically poll git for Misfit Monsters server changes
+
+[Timer]
+# Fire 30 seconds after boot, then every 60 seconds. Cheap: a git fetch
+# with no new commits is ~10ms locally and a couple-KB network round
+# trip. Net deploy latency from git push to live: up to ~60 seconds.
+OnBootSec=30s
+OnUnitActiveSec=60s
+AccuracySec=5s
+
+[Install]
+WantedBy=timers.target

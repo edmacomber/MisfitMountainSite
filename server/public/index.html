@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Misfit Mountain Games — a small independent studio crafting match-3 and hidden-object puzzles with a sense of place.">
+<meta name="theme-color" content="#0a0a1a">
+
+<meta property="og:title" content="Misfit Mountain Games">
+<meta property="og:description" content="A small studio crafting puzzle games with a sense of place.">
+<meta property="og:url" content="https://mountainstudio.cloud/">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://edmacomber.github.io/MisfitMonsters-Phaser/assets/backgrounds/bg-studio.jpg">
+<meta name="twitter:card" content="summary_large_image">
+
+<link rel="icon" type="image/png" href="https://edmacomber.github.io/MisfitMonsters-Phaser/assets/studio/logo-mmg.png">
+<link rel="apple-touch-icon" href="https://edmacomber.github.io/MisfitMonsters-Phaser/assets/studio/logo-mmg.png">
+
+<title>Misfit Mountain Games</title>
+
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: #0a0a1a;
+    color: #e0d8ff;
+    font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  a { color: #ffe066; text-decoration: none; }
+  a:hover { color: #fff5b0; }
+
+  /* ── Hero: full-bleed mountain painting with logo + title overlay ── */
+  .hero {
+    position: relative;
+    min-height: 86vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 60px 24px 80px;
+    background:
+      linear-gradient(180deg, rgba(10,10,26,0.05) 0%, rgba(10,10,26,0.25) 45%, rgba(10,10,26,0.85) 85%, rgba(10,10,26,1.0) 100%),
+      url('https://edmacomber.github.io/MisfitMonsters-Phaser/assets/backgrounds/bg-studio.jpg')
+        center/cover no-repeat;
+    overflow: hidden;
+  }
+  .hero::after {
+    /* Subtle firefly / mote shimmer overlay to sell the 'magic in the
+       air' feel Audrey painted into the valley mist. */
+    content: '';
+    position: absolute; inset: 0;
+    pointer-events: none;
+    background-image:
+      radial-gradient(1.5px 1.5px at 18% 72%, rgba(255, 244, 180, 0.7), transparent 50%),
+      radial-gradient(1px 1px at 42% 78%, rgba(255, 244, 180, 0.5), transparent 50%),
+      radial-gradient(1px 1px at 67% 74%, rgba(255, 244, 180, 0.6), transparent 50%),
+      radial-gradient(2px 2px at 81% 81%, rgba(255, 244, 180, 0.55), transparent 50%);
+    animation: shimmer 6s ease-in-out infinite;
+    opacity: 0.85;
+  }
+  @keyframes shimmer {
+    0%, 100% { opacity: 0.55; }
+    50%      { opacity: 0.95; }
+  }
+
+  /* Logo mark — Audrey's cat-on-moonlit-peak badge. The PNG already
+     carries its own gold ring and circular composition with a
+     transparent background, so all we add here is a soft glow so it
+     sits warmly against the hero backdrop. */
+  .logo {
+    position: relative;
+    width: clamp(160px, 22vw, 220px);
+    height: auto;
+    margin: 0 auto 24px;
+    display: block;
+    filter:
+      drop-shadow(0 0 30px rgba(212, 168, 67, 0.45))
+      drop-shadow(0 0 14px rgba(156, 92, 255, 0.35))
+      drop-shadow(0 12px 28px rgba(10, 10, 26, 0.7));
+  }
+
+  .hero h1 {
+    position: relative;
+    font-size: clamp(36px, 7vw, 68px);
+    font-weight: 900;
+    color: #ffe066;
+    letter-spacing: -0.5px;
+    margin: 0 0 16px;
+    line-height: 1.05;
+    text-shadow:
+      0 0 40px rgba(255, 224, 102, 0.35),
+      0 4px 24px rgba(10, 10, 26, 0.95),
+      0 2px 0 rgba(42, 24, 69, 0.9);
+  }
+  .hero .eyebrow {
+    position: relative;
+    color: rgba(255, 224, 102, 0.85);
+    font-size: 11px;
+    letter-spacing: 6px;
+    font-weight: 600;
+    text-transform: uppercase;
+    margin: 0 0 18px;
+  }
+  .hero .eyebrow::before, .hero .eyebrow::after {
+    content: '—'; opacity: 0.5; padding: 0 10px;
+  }
+  .hero .lede {
+    position: relative;
+    color: rgba(224, 216, 255, 0.92);
+    font-size: clamp(15px, 2vw, 19px);
+    max-width: 580px;
+    margin: 0 auto;
+    text-shadow: 0 2px 12px rgba(10, 10, 26, 0.85);
+  }
+
+  /* ── Games grid ── */
+  .games {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 80px 24px 80px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 24px;
+    width: 100%;
+  }
+  .games-head {
+    grid-column: 1 / -1;
+    text-align: center;
+    margin-bottom: 8px;
+  }
+  .games-head h2 {
+    color: #ffe066;
+    font-size: clamp(24px, 3.5vw, 32px);
+    margin: 0 0 6px;
+  }
+  .games-head p {
+    color: rgba(200, 180, 255, 0.7);
+    font-size: 13px;
+    margin: 0;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+
+  .game-card {
+    display: flex;
+    flex-direction: column;
+    background: linear-gradient(180deg, rgba(26, 16, 40, 0.92) 0%, rgba(18, 10, 28, 0.92) 100%);
+    border: 1px solid rgba(156, 92, 255, 0.3);
+    border-radius: 16px;
+    overflow: hidden;
+    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+  .game-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(255, 224, 102, 0.55);
+    box-shadow: 0 18px 48px rgba(156, 92, 255, 0.25);
+  }
+  .game-card .thumb {
+    aspect-ratio: 16 / 9;
+    background-size: cover;
+    background-position: center;
+    position: relative;
+  }
+  .game-card .thumb::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(0deg, rgba(18, 10, 28, 0.5) 0%, transparent 50%);
+  }
+  .game-card .body {
+    padding: 22px 22px 26px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+  }
+  .game-card h3 {
+    color: #ffe066;
+    font-size: 22px;
+    letter-spacing: 0.5px;
+    margin: 0 0 8px;
+  }
+  .game-card .tag {
+    color: #c08cff;
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    font-weight: 700;
+    margin: 0 0 10px;
+  }
+  .game-card p {
+    color: rgba(220, 210, 255, 0.78);
+    font-size: 14px;
+    margin: 0 0 18px;
+    flex: 1;
+  }
+  .game-card .cta {
+    display: inline-flex;
+    align-items: center;
+    align-self: flex-start;
+    gap: 8px;
+    padding: 10px 18px;
+    border-radius: 8px;
+    background: linear-gradient(180deg, #ffe066 0%, #d4a32f 100%);
+    color: #1a0f2e;
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+  }
+  .game-card .cta:hover { color: #1a0f2e; }
+  .game-card.coming { opacity: 0.55; cursor: default; }
+  .game-card.coming:hover {
+    transform: none;
+    border-color: rgba(156, 92, 255, 0.3);
+    box-shadow: none;
+  }
+  .game-card.coming .thumb {
+    background: linear-gradient(135deg, rgba(42, 24, 69, 0.6), rgba(26, 16, 40, 0.6));
+  }
+  .game-card.coming .thumb::before {
+    content: '';
+    position: absolute; inset: 0;
+    background-image:
+      radial-gradient(1px 1px at 20% 30%, rgba(255, 255, 255, 0.4), transparent),
+      radial-gradient(1px 1px at 70% 60%, rgba(255, 255, 255, 0.3), transparent),
+      radial-gradient(1px 1px at 45% 80%, rgba(255, 255, 255, 0.35), transparent);
+  }
+  .game-card.coming .tag { color: rgba(200, 180, 255, 0.6); }
+
+  footer {
+    border-top: 1px solid rgba(156, 92, 255, 0.2);
+    padding: 24px 24px 32px;
+    text-align: center;
+    color: rgba(200, 180, 255, 0.55);
+    font-size: 12px;
+  }
+  footer a { color: rgba(200, 180, 255, 0.75); }
+  footer .dot { color: rgba(156, 92, 255, 0.4); padding: 0 8px; }
+
+  @media (max-width: 640px) {
+    .hero { min-height: 78vh; padding: 40px 20px 60px; }
+    .logo { margin-bottom: 14px; }
+    .games { padding: 60px 20px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .hero::after { animation: none; opacity: 0.5; }
+  }
+
+  /* Scroll-down hint — dim, gently bobbing double-chevron at the
+     bottom of the initial viewport. Cues "there's more below" on
+     pages where the hero fills the viewport. Auto-hides on first
+     scroll via the inline script at the bottom of <body>. */
+  .scroll-hint {
+    position: fixed;
+    left: 50%;
+    bottom: 22px;
+    width: 32px;
+    height: 32px;
+    transform: translateX(-50%);
+    pointer-events: none;
+    z-index: 50;
+    animation: scroll-hint-bob 2.4s ease-in-out infinite;
+    transition: opacity 500ms ease-out;
+  }
+  .scroll-hint::before,
+  .scroll-hint::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    width: 14px;
+    height: 14px;
+    border-right: 2px solid rgba(220, 200, 255, 0.7);
+    border-bottom: 2px solid rgba(220, 200, 255, 0.7);
+    transform: translateX(-50%) rotate(45deg);
+  }
+  .scroll-hint::before { top: 6px; }
+  .scroll-hint::after {
+    top: 16px;
+    border-right-color: rgba(220, 200, 255, 0.4);
+    border-bottom-color: rgba(220, 200, 255, 0.4);
+    border-right-width: 1.5px;
+    border-bottom-width: 1.5px;
+  }
+  .scroll-hint.hide { opacity: 0; }
+  @keyframes scroll-hint-bob {
+    0%, 100% { transform: translate(-50%, 0);   opacity: 0.45; }
+    50%      { transform: translate(-50%, 6px); opacity: 0.85; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .scroll-hint { animation: none; opacity: 0.55; }
+  }
+</style>
+</head>
+<body>
+
+<section class="hero">
+  <img class="logo"
+       src="https://edmacomber.github.io/MisfitMonsters-Phaser/assets/studio/logo-mmg.png"
+       alt="Misfit Mountain Games logo — a cat on a moonlit mountain peak inside a gold ring">
+  <div class="eyebrow">An Independent Studio</div>
+  <h1>Misfit Mountain Games</h1>
+  <p class="lede">
+    Crafting puzzle games with a sense of place. Generous with art,
+    earnest about craft, welcoming to every level of player.
+  </p>
+</section>
+
+<main class="games">
+  <div class="games-head">
+    <h2>Our Games</h2>
+    <p>Free · Browser-Based · Share a Leaderboard</p>
+  </div>
+
+  <a class="game-card" href="/misfitmonsters/">
+    <div class="thumb"
+         style="background-image: url('https://edmacomber.github.io/MisfitMonsters-Phaser/assets/backgrounds/bg-tempest.jpg');"></div>
+    <div class="body">
+      <p class="tag">Match-3 Adventure · Out Now</p>
+      <h3>Misfit Monsters</h3>
+      <p>Match elemental marbles across hand-painted worlds, hatch nine misfit creatures from eggs you earn, and plant your pin on a 3D globe of players.</p>
+      <span class="cta">Play Now →</span>
+    </div>
+  </a>
+
+  <a class="game-card" href="/angrymonsters/">
+    <div class="thumb"
+         style="background-image: url('https://edmacomber.github.io/MisfitMonsters-Phaser/assets/backgrounds/bg-angrymonsters.jpg');"></div>
+    <div class="body">
+      <p class="tag">Physics Action · Out Now</p>
+      <h3>Angry Monsters</h3>
+      <p>Fling-style physics puzzles starring the creatures of Misfit Mountain. Line up the shot, account for the wind, bring the tower down.</p>
+      <span class="cta">Play Now →</span>
+    </div>
+  </a>
+
+  <div class="game-card coming">
+    <div class="thumb"></div>
+    <div class="body">
+      <p class="tag">In Development</p>
+      <h3>Misfit City</h3>
+      <p>A hidden-object journey through twelve painted districts. Spot the item, find the Wisper, beat your ghost. (Sibling title — shared leaderboard with the other misfits.)</p>
+      <span class="cta" style="background: rgba(42, 24, 69, 0.6); color: rgba(200, 180, 255, 0.75);">Coming Soon</span>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div>© <span id="yr"></span> Misfit Mountain Games</div>
+</footer>
+
+<div class="scroll-hint" aria-hidden="true"></div>
+
+<script>
+  document.getElementById('yr').textContent = new Date().getFullYear();
+
+  // Scroll-hint visibility: visible while there's more to scroll to,
+  // hidden when the user reaches the bottom of the page. Also hidden
+  // entirely on pages that already fit in the viewport (nothing to
+  // hint at). Dynamic — if the user scrolls back up from the bottom,
+  // the hint reappears because there's below-fold content again.
+  (function() {
+    var hint = document.querySelector('.scroll-hint');
+    if (!hint) return;
+    if (document.body.scrollHeight <= window.innerHeight + 40) {
+      hint.style.display = 'none';
+      return;
+    }
+    var update = function() {
+      var atBottom = (window.scrollY + window.innerHeight) >=
+        (document.body.scrollHeight - 40);
+      hint.classList.toggle('hide', atBottom);
+    };
+    window.addEventListener('scroll', update, { passive: true });
+    update();
+  })();
+</script>
+
+</body>
+</html>

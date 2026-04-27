@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Angry Monsters — a fling-style physics puzzle starring the creatures of Misfit Mountain. Line up the shot, account for the wind, bring the tower down.">
+<meta name="theme-color" content="#0a0a1a">
+
+<meta property="og:title" content="Angry Monsters — Misfit Mountain Games">
+<meta property="og:description" content="Fling-style physics puzzles starring the creatures of Misfit Mountain. Line up the shot, account for the wind, bring the tower down.">
+<meta property="og:url" content="https://mountainstudio.cloud/angrymonsters/">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://edmacomber.github.io/MisfitMonsters-Phaser/assets/backgrounds/bg-angrymonsters.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Angry Monsters">
+<meta name="twitter:description" content="Fling-style physics. Line up the shot. Bring the tower down.">
+<meta name="twitter:image" content="https://edmacomber.github.io/MisfitMonsters-Phaser/assets/backgrounds/bg-angrymonsters.jpg">
+
+<link rel="icon" type="image/png" href="https://edmacomber.github.io/MisfitMonsters-Phaser/assets/studio/logo-mmg.png">
+<link rel="apple-touch-icon" href="https://edmacomber.github.io/MisfitMonsters-Phaser/assets/studio/logo-mmg.png">
+
+<title>Angry Monsters — Misfit Mountain Games</title>
+
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: #0a0a1a;
+    color: #e0d8ff;
+    font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  img { max-width: 100%; height: auto; display: block; }
+  a { color: #ffe066; text-decoration: none; }
+  a:hover { color: #fff5b0; }
+
+  /* ── Studio badge: the cat-on-peak mark lives at the top of every
+       game landing. Same size + glow as the Misfit Monsters page so
+       the brand reads consistently across the studio. ── */
+  .studio-badge {
+    position: relative;
+    display: block;
+    width: clamp(160px, 22vw, 220px);
+    height: auto;
+    margin: 0 auto 20px;
+    transition: transform 0.25s ease, filter 0.25s ease;
+    filter:
+      drop-shadow(0 0 30px rgba(212, 168, 67, 0.45))
+      drop-shadow(0 0 14px rgba(156, 92, 255, 0.4));
+  }
+  .studio-badge:hover {
+    transform: translateY(-2px) scale(1.04);
+    filter:
+      drop-shadow(0 0 26px rgba(212, 168, 67, 0.65))
+      drop-shadow(0 0 14px rgba(156, 92, 255, 0.55));
+  }
+  .studio-mark {
+    position: relative;
+    color: rgba(255, 224, 102, 0.85);
+    font-size: 11px;
+    letter-spacing: 6px;
+    font-weight: 600;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+  }
+  .studio-mark::before, .studio-mark::after {
+    content: '—'; opacity: 0.5; padding: 0 10px;
+  }
+
+  /* ── Hero: Audrey's slingshot-and-tumbling-tower painting ── */
+  .hero {
+    position: relative;
+    min-height: 86vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 60px 24px 80px;
+    background:
+      linear-gradient(180deg, rgba(10,10,26,0.15) 0%, rgba(10,10,26,0.45) 55%, rgba(10,10,26,0.92) 88%, rgba(10,10,26,1.0) 100%),
+      url('https://edmacomber.github.io/MisfitMonsters-Phaser/assets/backgrounds/bg-angrymonsters.jpg')
+        center/cover no-repeat;
+    overflow: hidden;
+  }
+  .hero::after {
+    /* Ember-spark motes to echo the dust cloud on the right side of
+       the painting — pulls the hero together with subtle motion. */
+    content: '';
+    position: absolute; inset: 0;
+    pointer-events: none;
+    background-image:
+      radial-gradient(1.5px 1.5px at 72% 46%, rgba(255, 190, 110, 0.7), transparent 50%),
+      radial-gradient(1px 1px at 78% 52%, rgba(255, 200, 120, 0.55), transparent 50%),
+      radial-gradient(1px 1px at 68% 58%, rgba(255, 180, 90, 0.6), transparent 50%),
+      radial-gradient(2px 2px at 82% 62%, rgba(255, 220, 140, 0.45), transparent 50%);
+    animation: emberShimmer 5s ease-in-out infinite;
+    opacity: 0.85;
+  }
+  @keyframes emberShimmer {
+    0%, 100% { opacity: 0.55; }
+    50%      { opacity: 0.95; }
+  }
+
+  .hero h1 {
+    position: relative;
+    font-size: clamp(36px, 7vw, 68px);
+    font-weight: 900;
+    color: #ffe066;
+    letter-spacing: -0.5px;
+    margin: 0 0 16px;
+    line-height: 1.05;
+    text-shadow:
+      0 0 40px rgba(255, 224, 102, 0.35),
+      0 4px 24px rgba(10, 10, 26, 0.95),
+      0 2px 0 rgba(42, 24, 69, 0.9);
+  }
+  .hero .lede {
+    position: relative;
+    color: rgba(224, 216, 255, 0.92);
+    font-size: clamp(15px, 2vw, 19px);
+    max-width: 580px;
+    margin: 0 auto 28px;
+    text-shadow: 0 2px 12px rgba(10, 10, 26, 0.85);
+  }
+  .hero .cta-row {
+    position: relative;
+    display: inline-flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 28px;
+    border-radius: 10px;
+    font-weight: 800;
+    font-size: 14px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .btn-primary {
+    background: linear-gradient(180deg, #ffe066 0%, #d4a32f 100%);
+    color: #1a0f2e;
+    box-shadow: 0 10px 24px rgba(212, 168, 67, 0.35);
+  }
+  .btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 14px 30px rgba(212, 168, 67, 0.45);
+    color: #1a0f2e;
+  }
+  .btn-ghost {
+    background: rgba(42, 24, 69, 0.6);
+    border: 1.5px solid rgba(156, 92, 255, 0.55);
+    color: #ffe066;
+  }
+  .btn-ghost:hover {
+    background: rgba(58, 42, 90, 0.8);
+    transform: translateY(-1px);
+  }
+
+  /* ── Pillars band ── */
+  .pillars {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 80px 24px 60px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 24px;
+    width: 100%;
+  }
+  .pillar {
+    background: linear-gradient(180deg, rgba(26, 16, 40, 0.8) 0%, rgba(18, 10, 28, 0.8) 100%);
+    border: 1px solid rgba(156, 92, 255, 0.25);
+    border-radius: 14px;
+    padding: 24px 22px;
+  }
+  .pillar h3 {
+    color: #ffe066;
+    font-size: 15px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin: 0 0 10px;
+  }
+  .pillar p {
+    color: rgba(220, 210, 255, 0.78);
+    font-size: 14px;
+    margin: 0;
+  }
+
+  /* ── Footer ── */
+  footer {
+    margin-top: auto;
+    border-top: 1px solid rgba(156, 92, 255, 0.2);
+    padding: 24px 24px 32px;
+    text-align: center;
+    color: rgba(200, 180, 255, 0.55);
+    font-size: 12px;
+  }
+  footer a { color: rgba(200, 180, 255, 0.75); }
+  footer .dot { color: rgba(156, 92, 255, 0.4); padding: 0 8px; }
+
+  @media (max-width: 640px) {
+    .hero { min-height: 78vh; padding: 60px 20px 60px; }
+    .studio-badge { margin-bottom: 14px; }
+    .pillars { padding: 60px 20px 40px; }
+  }
+
+  /* ── Portrait hero swap for phones / narrow tablets. The landscape
+       painting cover-crops the slingshot off the left and the
+       collapsing fortress off the right when squeezed into 9:16.
+       Portrait companion recomposes both on the same cliffs, vertically
+       stacked — slingshot + comet + fortress all visible. Desktop is
+       untouched; OG share cards stay landscape. ── */
+  @media (orientation: portrait) and (max-width: 900px) {
+    .hero {
+      background:
+        linear-gradient(180deg, rgba(10,10,26,0.15) 0%, rgba(10,10,26,0.45) 55%, rgba(10,10,26,0.92) 88%, rgba(10,10,26,1.0) 100%),
+        url('https://edmacomber.github.io/MisfitMonsters-Phaser/assets/backgrounds/bg-angrymonsters-portrait.jpg')
+          center/cover no-repeat;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .hero::after { animation: none; opacity: 0.5; }
+  }
+
+  /* Scroll-down hint — dim, gently bobbing double-chevron at the
+     bottom of the initial viewport. Cues "there's more below" on
+     pages where the hero fills the viewport. Auto-hides on first
+     scroll via the inline script at the bottom of <body>. */
+  .scroll-hint {
+    position: fixed;
+    left: 50%;
+    bottom: 22px;
+    width: 32px;
+    height: 32px;
+    transform: translateX(-50%);
+    pointer-events: none;
+    z-index: 50;
+    animation: scroll-hint-bob 2.4s ease-in-out infinite;
+    transition: opacity 500ms ease-out;
+  }
+  .scroll-hint::before,
+  .scroll-hint::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    width: 14px;
+    height: 14px;
+    border-right: 2px solid rgba(220, 200, 255, 0.7);
+    border-bottom: 2px solid rgba(220, 200, 255, 0.7);
+    transform: translateX(-50%) rotate(45deg);
+  }
+  .scroll-hint::before { top: 6px; }
+  .scroll-hint::after {
+    top: 16px;
+    border-right-color: rgba(220, 200, 255, 0.4);
+    border-bottom-color: rgba(220, 200, 255, 0.4);
+    border-right-width: 1.5px;
+    border-bottom-width: 1.5px;
+  }
+  .scroll-hint.hide { opacity: 0; }
+  @keyframes scroll-hint-bob {
+    0%, 100% { transform: translate(-50%, 0);   opacity: 0.45; }
+    50%      { transform: translate(-50%, 6px); opacity: 0.85; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .scroll-hint { animation: none; opacity: 0.55; }
+  }
+</style>
+</head>
+<body>
+
+<section class="hero">
+  <a href="/" aria-label="Misfit Mountain Games home">
+    <img class="studio-badge"
+         src="https://edmacomber.github.io/MisfitMonsters-Phaser/assets/studio/logo-mmg.png"
+         alt="">
+  </a>
+  <div class="studio-mark">Misfit Mountain Games</div>
+  <h1>Angry Monsters</h1>
+  <p class="lede">
+    Fling-style physics puzzles starring the creatures of Misfit Mountain.
+    Line up the shot, account for the wind, bring the tower down.
+  </p>
+  <div class="cta-row">
+    <a class="btn btn-primary" href="https://edmacomber.github.io/AngryMonsters-Phaser/"
+       rel="noopener">▶ Play Now</a>
+    <a class="btn btn-ghost" href="/misfitmonsters/">Try Misfit Monsters</a>
+  </div>
+</section>
+
+<section class="pillars">
+  <div class="pillar">
+    <h3>Aim · Fling · Topple</h3>
+    <p>One-touch slingshot controls. Drag to aim, release to launch. Chain hits collapse whole structures in a shower of rubble.</p>
+  </div>
+  <div class="pillar">
+    <h3>Wind Changes Everything</h3>
+    <p>A shifting crosswind turns every level into a read-the-arc puzzle. The third star is always earned, never given.</p>
+  </div>
+  <div class="pillar">
+    <h3>Misfits You Already Know</h3>
+    <p>Play the creatures you hatched in Misfit Monsters. Each has its own arc, weight, and special trick — experiment until one clicks.</p>
+  </div>
+</section>
+
+<footer>
+  <div>© <span id="yr"></span> Misfit Mountain Games · <a href="/">Studio</a> <span class="dot">·</span> <a href="/misfitmonsters/">Misfit Monsters</a></div>
+</footer>
+
+<div class="scroll-hint" aria-hidden="true"></div>
+
+<script>
+  document.getElementById('yr').textContent = new Date().getFullYear();
+
+  // Scroll-hint visibility: visible while there's more to scroll to,
+  // hidden when the user reaches the bottom of the page. Also hidden
+  // entirely on pages that already fit in the viewport (nothing to
+  // hint at). Dynamic — if the user scrolls back up from the bottom,
+  // the hint reappears because there's below-fold content again.
+  (function() {
+    var hint = document.querySelector('.scroll-hint');
+    if (!hint) return;
+    if (document.body.scrollHeight <= window.innerHeight + 40) {
+      hint.style.display = 'none';
+      return;
+    }
+    var update = function() {
+      var atBottom = (window.scrollY + window.innerHeight) >=
+        (document.body.scrollHeight - 40);
+      hint.classList.toggle('hide', atBottom);
+    };
+    window.addEventListener('scroll', update, { passive: true });
+    update();
+  })();
+</script>
+
+</body>
+</html>

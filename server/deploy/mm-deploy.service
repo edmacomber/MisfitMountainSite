@@ -1,0 +1,13 @@
+[Unit]
+Description=Misfit Monsters auto-deploy — git pull + conditional restart
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=claudecode
+Group=claudecode
+ExecStart=/opt/MisfitMountainSite/server/deploy/mm-deploy.sh
+
+[Install]
+WantedBy=multi-user.target

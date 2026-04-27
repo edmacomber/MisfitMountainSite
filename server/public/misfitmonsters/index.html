@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Misfit Monsters — a match-3 puzzle adventure across four hand-crafted worlds. Match elemental marbles, hatch misfit creatures, climb a worldwide leaderboard on a 3D globe. Free to play in your browser.">
+<meta name="theme-color" content="#0a0a1a">
+
+<!-- OG + Twitter for link unfurls -->
+<meta property="og:title" content="Misfit Monsters — a match-3 puzzle adventure">
+<meta property="og:description" content="Match elemental marbles. Hatch misfit creatures. Climb the worldwide leaderboard on a 3D globe.">
+<meta property="og:url" content="https://mountainstudio.cloud/misfitmonsters/">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://edmacomber.github.io/MisfitMonsters-Phaser/assets/backgrounds/bg-mm-hero.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Misfit Monsters">
+<meta name="twitter:description" content="Match. Hatch. Collect. A match-3 adventure across four hand-crafted worlds.">
+<meta name="twitter:image" content="https://edmacomber.github.io/MisfitMonsters-Phaser/assets/backgrounds/bg-mm-hero.jpg">
+
+<link rel="icon" type="image/png" href="https://edmacomber.github.io/MisfitMonsters-Phaser/assets/studio/logo-mmg.png">
+<link rel="apple-touch-icon" href="https://edmacomber.github.io/MisfitMonsters-Phaser/assets/studio/logo-mmg.png">
+
+<title>Misfit Monsters — Misfit Mountain Games</title>
+
+<style>
+  /* ── Reset + base palette ─────────────────────────────────── */
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: #0a0a1a;
+    color: #e0d8ff;
+    font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  img { max-width: 100%; height: auto; display: block; }
+  a { color: #ffe066; text-decoration: none; }
+  a:hover { color: #fff5b0; }
+
+  /* ── Hero: all-three-worlds converging vista by Audrey ────── */
+  .hero {
+    position: relative;
+    min-height: 86vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 40px 24px 80px;
+    background:
+      linear-gradient(180deg, rgba(10,10,26,0.15) 0%, rgba(10,10,26,0.55) 60%, rgba(10,10,26,1.0) 100%),
+      url('https://edmacomber.github.io/MisfitMonsters-Phaser/assets/backgrounds/bg-mm-hero.jpg')
+        center/cover no-repeat;
+    overflow: hidden;
+  }
+  .hero::before {
+    /* Subtle lightning-pulse overlay to hint the storm is moving */
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 30% 35%, rgba(156,182,255,0.18) 0%, transparent 50%);
+    animation: lightning-pulse 8s ease-in-out infinite;
+    pointer-events: none;
+  }
+  @keyframes lightning-pulse {
+    0%, 85%, 100% { opacity: 0.3; }
+    88% { opacity: 1; }
+    90% { opacity: 0.4; }
+    93% { opacity: 0.9; }
+    96% { opacity: 0.3; }
+  }
+
+  /* Studio badge in the hero — same size + styling as the studio
+     landing's logo for visual continuity. Clickable, routes home. */
+  .studio-badge {
+    position: relative;
+    display: block;
+    width: clamp(160px, 22vw, 220px);
+    height: auto;
+    margin: 0 auto 20px;
+    transition: transform 0.25s ease, filter 0.25s ease;
+    filter:
+      drop-shadow(0 0 30px rgba(212, 168, 67, 0.45))
+      drop-shadow(0 0 14px rgba(156, 92, 255, 0.4));
+  }
+  .studio-badge:hover {
+    transform: translateY(-2px) scale(1.04);
+    filter:
+      drop-shadow(0 0 26px rgba(212, 168, 67, 0.65))
+      drop-shadow(0 0 14px rgba(156, 92, 255, 0.55));
+  }
+
+  .studio-mark {
+    position: relative;
+    color: rgba(255, 224, 102, 0.85);
+    font-size: 11px;
+    letter-spacing: 6px;
+    font-weight: 600;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+  }
+  .studio-mark::before, .studio-mark::after {
+    content: '—'; opacity: 0.5; padding: 0 10px;
+  }
+  .hero h1 {
+    position: relative;
+    font-size: clamp(42px, 9vw, 88px);
+    font-weight: 900;
+    color: #ffe066;
+    letter-spacing: -1px;
+    margin: 0 0 16px;
+    text-shadow:
+      0 0 40px rgba(255, 224, 102, 0.35),
+      0 4px 24px rgba(42, 24, 69, 0.9),
+      0 2px 0 #2a1845;
+    line-height: 1.0;
+  }
+  .hero .tagline {
+    position: relative;
+    font-size: clamp(15px, 2.2vw, 19px);
+    color: #e0d8ff;
+    max-width: 640px;
+    margin: 0 auto 40px;
+    opacity: 0.92;
+    font-weight: 400;
+  }
+  .cta-row {
+    position: relative;
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 16px 32px;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+    cursor: pointer;
+  }
+  .btn-primary {
+    background: linear-gradient(180deg, #ffe066 0%, #d4a32f 100%);
+    color: #1a0f2e;
+    box-shadow:
+      0 8px 24px rgba(255, 224, 102, 0.35),
+      0 0 0 1px rgba(255, 245, 200, 0.4) inset;
+  }
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow:
+      0 12px 32px rgba(255, 224, 102, 0.5),
+      0 0 0 1px rgba(255, 245, 200, 0.6) inset;
+    color: #1a0f2e;
+  }
+  .btn-secondary {
+    background: rgba(42, 24, 69, 0.75);
+    color: #c08cff;
+    border: 1px solid rgba(156, 92, 255, 0.5);
+  }
+  .btn-secondary:hover {
+    background: rgba(58, 42, 90, 0.95);
+    color: #e0c8ff;
+    transform: translateY(-2px);
+  }
+
+  /* ── Creature scroll — a drifting row just below the hero ── */
+  .creature-strip {
+    position: relative;
+    padding: 28px 0 10px;
+    background: #0a0a1a;
+    border-top: 1px solid rgba(156, 92, 255, 0.18);
+    border-bottom: 1px solid rgba(156, 92, 255, 0.18);
+    overflow: hidden;
+    mask-image: linear-gradient(90deg, transparent 0%, #000 8%, #000 92%, transparent 100%);
+    -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 8%, #000 92%, transparent 100%);
+  }
+  .creature-track {
+    display: flex;
+    gap: 28px;
+    width: max-content;
+    animation: drift 38s linear infinite;
+  }
+  .creature-track img {
+    height: 96px;
+    width: 96px;
+    object-fit: contain;
+    filter: drop-shadow(0 6px 18px rgba(156, 92, 255, 0.35));
+    opacity: 0.95;
+  }
+  @keyframes drift {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+  }
+
+  /* ── Features section ─────────────────────────────────────── */
+  .section {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 80px 24px;
+  }
+  .section-head {
+    text-align: center;
+    margin-bottom: 48px;
+  }
+  .section-eyebrow {
+    color: #c08cff;
+    font-size: 11px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    font-weight: 700;
+  }
+  .section-head h2 {
+    color: #ffe066;
+    font-size: clamp(28px, 4vw, 40px);
+    margin: 8px 0 0;
+    letter-spacing: 0.5px;
+  }
+  .feature-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 24px;
+  }
+  .feature-card {
+    background: linear-gradient(180deg, rgba(26, 16, 40, 0.9) 0%, rgba(18, 10, 28, 0.9) 100%);
+    border: 1px solid rgba(156, 92, 255, 0.28);
+    border-radius: 16px;
+    padding: 28px 24px;
+    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+  .feature-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(255, 224, 102, 0.4);
+    box-shadow: 0 12px 40px rgba(156, 92, 255, 0.2);
+  }
+  .feature-card .icon {
+    font-size: 34px;
+    margin-bottom: 14px;
+    display: block;
+  }
+  .feature-card h3 {
+    color: #ffe066;
+    font-size: 18px;
+    margin: 0 0 10px;
+    letter-spacing: 0.5px;
+  }
+  .feature-card p {
+    margin: 0;
+    color: rgba(224, 216, 255, 0.82);
+    font-size: 14px;
+    line-height: 1.55;
+  }
+
+  /* ── Worlds showcase ──────────────────────────────────────── */
+  .worlds {
+    background: linear-gradient(180deg, #0a0a1a 0%, #1a0f2e 50%, #0a0a1a 100%);
+    padding: 80px 0;
+  }
+  .worlds-grid {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 0 24px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+  }
+  .world-tile {
+    position: relative;
+    aspect-ratio: 4 / 3;
+    border-radius: 14px;
+    overflow: hidden;
+    border: 1px solid rgba(156, 92, 255, 0.25);
+  }
+  .world-tile img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.6s ease;
+  }
+  .world-tile:hover img { transform: scale(1.06); }
+  .world-tile .label {
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    padding: 18px 20px 16px;
+    background: linear-gradient(0deg, rgba(10, 10, 26, 0.92) 20%, transparent 100%);
+  }
+  .world-tile .label .eyebrow {
+    color: #c08cff;
+    font-size: 10px;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    font-weight: 700;
+  }
+  .world-tile .label h3 {
+    color: #ffe066;
+    font-size: 20px;
+    margin: 4px 0 2px;
+  }
+  .world-tile .label p {
+    color: rgba(220, 210, 255, 0.75);
+    font-size: 12px;
+    margin: 0;
+  }
+
+  /* ── CTA band ─────────────────────────────────────────────── */
+  .cta-band {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 80px 24px;
+    text-align: center;
+  }
+  .cta-band h2 {
+    color: #ffe066;
+    font-size: clamp(26px, 4vw, 36px);
+    margin: 0 0 12px;
+  }
+  .cta-band p {
+    color: rgba(220, 210, 255, 0.8);
+    margin: 0 0 32px;
+    font-size: 15px;
+  }
+
+  /* ── About the studio ─────────────────────────────────────── */
+  .studio {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 40px 24px 80px;
+    text-align: center;
+  }
+  .studio h3 {
+    color: #c08cff;
+    font-size: 13px;
+    letter-spacing: 3.5px;
+    text-transform: uppercase;
+    margin: 0 0 16px;
+  }
+  .studio p {
+    color: rgba(224, 216, 255, 0.88);
+    font-size: 15px;
+    line-height: 1.65;
+    margin: 0 0 12px;
+  }
+
+  /* ── Footer ───────────────────────────────────────────────── */
+  footer {
+    border-top: 1px solid rgba(156, 92, 255, 0.2);
+    padding: 32px 24px 40px;
+    text-align: center;
+    color: rgba(200, 180, 255, 0.55);
+    font-size: 12px;
+  }
+  footer a { color: rgba(200, 180, 255, 0.75); }
+  footer .dot { color: rgba(156, 92, 255, 0.4); padding: 0 8px; }
+
+  /* ── Mobile refinements ───────────────────────────────────── */
+  @media (max-width: 640px) {
+    .hero { min-height: 78vh; padding-bottom: 60px; }
+    .cta-row .btn { padding: 14px 24px; font-size: 14px; }
+    .section { padding: 60px 20px; }
+    .creature-track img { height: 72px; width: 72px; }
+  }
+
+  /* ── Portrait hero swap for phones / narrow tablets. The landscape
+       painting (bg-mm-hero.jpg) cover-crops its edges when squeezed
+       into a 9:16 viewport, hiding the volcano on one side and the
+       forest on the other. The portrait companion recomposes all four
+       biomes vertically so the whole world reads on a held-vertical
+       phone. Desktop is untouched; OG share cards stay landscape
+       because that's how every unfurler crops. ── */
+  @media (orientation: portrait) and (max-width: 900px) {
+    .hero {
+      background:
+        linear-gradient(180deg, rgba(10,10,26,0.15) 0%, rgba(10,10,26,0.55) 60%, rgba(10,10,26,1.0) 100%),
+        url('https://edmacomber.github.io/MisfitMonsters-Phaser/assets/backgrounds/bg-mm-hero-portrait.jpg')
+          center/cover no-repeat;
+    }
+  }
+
+  /* ── Respect reduced-motion users ─────────────────────────── */
+  @media (prefers-reduced-motion: reduce) {
+    .creature-track { animation: none; }
+    .hero::before { animation: none; opacity: 0.3; }
+  }
+
+  /* Scroll-down hint — dim, gently bobbing double-chevron at the
+     bottom of the initial viewport. Cues "there's more below" on
+     pages where the hero fills the viewport. Auto-hides on first
+     scroll via the inline script at the bottom of <body>. */
+  .scroll-hint {
+    position: fixed;
+    left: 50%;
+    bottom: 22px;
+    width: 32px;
+    height: 32px;
+    transform: translateX(-50%);
+    pointer-events: none;
+    z-index: 50;
+    animation: scroll-hint-bob 2.4s ease-in-out infinite;
+    transition: opacity 500ms ease-out;
+  }
+  .scroll-hint::before,
+  .scroll-hint::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    width: 14px;
+    height: 14px;
+    border-right: 2px solid rgba(220, 200, 255, 0.7);
+    border-bottom: 2px solid rgba(220, 200, 255, 0.7);
+    transform: translateX(-50%) rotate(45deg);
+  }
+  .scroll-hint::before { top: 6px; }
+  .scroll-hint::after {
+    top: 16px;
+    border-right-color: rgba(220, 200, 255, 0.4);
+    border-bottom-color: rgba(220, 200, 255, 0.4);
+    border-right-width: 1.5px;
+    border-bottom-width: 1.5px;
+  }
+  .scroll-hint.hide { opacity: 0; }
+  @keyframes scroll-hint-bob {
+    0%, 100% { transform: translate(-50%, 0);   opacity: 0.45; }
+    50%      { transform: translate(-50%, 6px); opacity: 0.85; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .scroll-hint { animation: none; opacity: 0.55; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── HERO ── -->
+<section class="hero">
+  <a href="/" aria-label="Misfit Mountain Games home">
+    <img class="studio-badge"
+         src="https://edmacomber.github.io/MisfitMonsters-Phaser/assets/studio/logo-mmg.png"
+         alt="">
+  </a>
+  <div class="studio-mark">Misfit Mountain Games</div>
+  <h1>Misfit Monsters</h1>
+  <p class="tagline">
+    Match elemental marbles. Hatch misfit creatures. Climb a worldwide
+    leaderboard on a hand-painted 3D globe.
+  </p>
+  <div class="cta-row">
+    <a class="btn btn-primary" href="https://edmacomber.github.io/MisfitMonsters-Phaser/"
+       rel="noopener">▶ Play Now &nbsp;— Free</a>
+    <a class="btn btn-secondary" href="#features">Learn More</a>
+  </div>
+</section>
+
+<!-- ── DRIFTING CREATURES ── -->
+<div class="creature-strip" aria-hidden="true">
+  <div class="creature-track">
+    <!-- Loop twice so the CSS animation can wrap seamlessly at -50% -->
+    <img src="https://edmacomber.github.io/MisfitMonsters-Phaser/assets/creatures/creature-0.png" alt="">
+    <img src="https://edmacomber.github.io/MisfitMonsters-Phaser/assets/creatures/creature-1.png" alt="">
+    <img src="https://edmacomber.github.io/MisfitMonsters-Phaser/assets/creatures/creature-2.png" alt="">
+    <img src="https://edmacomber.github.io/MisfitMonsters-Phaser/assets/creatures/creature-3.png" alt="">
+    <img src="https://edmacomber.github.io/MisfitMonsters-Phaser/assets/creatures/creature-4.png" alt="">
+    <img src="https://edmacomber.github.io/MisfitMonsters-Phaser/assets/creatures/creature-5.png" alt="">
+    <img src="https://edmacomber.github.io/MisfitMonsters-Phaser/assets/creatures/creature-6.png" alt="">
+    <img src="https://edmacomber.github.io/MisfitMonsters-Phaser/assets/creatures/creature-7.png" alt="">
+    <img src="https://edmacomber.github.io/MisfitMonsters-Phaser/assets/creatures/creature-8.png" alt="">
+    <img src="https://edmacomber.github.io/MisfitMonsters-Phaser/assets/creatures/creature-0.png" alt="">
+    <img src="https://edmacomber.github.io/MisfitMonsters-Phaser/assets/creatures/creature-1.png" alt="">
+    <img src="https://edmacomber.github.io/MisfitMonsters-Phaser/assets/creatures/creature-2.png" alt="">
+    <img src="https://edmacomber.github.io/MisfitMonsters-Phaser/assets/creatures/creature-3.png" alt="">
+    <img src="https://edmacomber.github.io/MisfitMonsters-Phaser/assets/creatures/creature-4.png" alt="">
+    <img src="https://edmacomber.github.io/MisfitMonsters-Phaser/assets/creatures/creature-5.png" alt="">
+    <img src="https://edmacomber.github.io/MisfitMonsters-Phaser/assets/creatures/creature-6.png" alt="">
+    <img src="https://edmacomber.github.io/MisfitMonsters-Phaser/assets/creatures/creature-7.png" alt="">
+    <img src="https://edmacomber.github.io/MisfitMonsters-Phaser/assets/creatures/creature-8.png" alt="">
+  </div>
+</div>
+
+<!-- ── FEATURES ── -->
+<section class="section" id="features">
+  <div class="section-head">
+    <div class="section-eyebrow">What's Inside</div>
+    <h2>A match-3 with a sense of place</h2>
+  </div>
+  <div class="feature-grid">
+    <div class="feature-card">
+      <span class="icon">🌋</span>
+      <h3>60 Levels, 4 Worlds</h3>
+      <p>Ember Wastes, Thornveil Forest, storm-battered Tempest Coast, and frostbound Frostmoor — each biome with its own tile mechanics and painterly backdrop.</p>
+    </div>
+    <div class="feature-card">
+      <span class="icon">🐲</span>
+      <h3>10 Misfit Creatures</h3>
+      <p>Each companion has a signature element and a charged ability that fires when the bar fills. Hatch them from eggs you earn along the way.</p>
+    </div>
+    <div class="feature-card">
+      <span class="icon">🌍</span>
+      <h3>3D Globe Leaderboard</h3>
+      <p>Your scores plot at your real-world location on a rotating night-earth globe. Find your pin glowing gold; tap any player to see their stats.</p>
+    </div>
+    <div class="feature-card">
+      <span class="icon">💎</span>
+      <h3>Cosmetic Unlocks</h3>
+      <p>Classic glass, cat's eye, galactic swirls, frost crystal, electric arcs, and hand-illustrated emerald gemstones — earn marble styles as you climb.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ── WORLDS SHOWCASE ── -->
+<section class="worlds">
+  <div class="section-head">
+    <div class="section-eyebrow">Worlds</div>
+    <h2>Four hand-painted biomes</h2>
+  </div>
+  <div class="worlds-grid">
+    <div class="world-tile">
+      <img src="https://edmacomber.github.io/MisfitMonsters-Phaser/assets/backgrounds/bg-ember.png" alt="Ember Wastes">
+      <div class="label">
+        <div class="eyebrow">World 1 · Levels 1–15</div>
+        <h3>Ember Wastes</h3>
+        <p>Volcanic plains under a dark caldera sky. Lava tiles cool when you match atop them.</p>
+      </div>
+    </div>
+    <div class="world-tile">
+      <img src="https://edmacomber.github.io/MisfitMonsters-Phaser/assets/backgrounds/bg-thornveil.png" alt="Thornveil Forest">
+      <div class="label">
+        <div class="eyebrow">World 2 · Levels 16–30</div>
+        <h3>Thornveil Forest</h3>
+        <p>Vines, ice, and distant thunder. Spreading vines block swaps until you cut them back.</p>
+      </div>
+    </div>
+    <div class="world-tile">
+      <img src="https://edmacomber.github.io/MisfitMonsters-Phaser/assets/backgrounds/bg-tempest.jpg" alt="Tempest Coast">
+      <div class="label">
+        <div class="eyebrow">World 3 · Levels 31–45</div>
+        <h3>Tempest Coast</h3>
+        <p>Storm-lit cliffs above a churning sea. Storm tiles chain-detonate in a lightning cross when matched.</p>
+      </div>
+    </div>
+    <div class="world-tile">
+      <img src="https://edmacomber.github.io/MisfitMonsters-Phaser/assets/backgrounds/bg-frostmoor.jpg" alt="Frostmoor">
+      <div class="label">
+        <div class="eyebrow">World 4 · Levels 46–60</div>
+        <h3>Frostmoor</h3>
+        <p>Windswept glacial moor under a pale aurora sky. Ice Links tether pairs of tiles — shatter both in the same cascade or neither clears.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── CTA BAND ── -->
+<section class="cta-band">
+  <h2>Ready to play?</h2>
+  <p>Free in your browser — no install, no account. Takes about 30 seconds to start.</p>
+  <div class="cta-row">
+    <a class="btn btn-primary" href="https://edmacomber.github.io/MisfitMonsters-Phaser/"
+       rel="noopener">▶ Play Now</a>
+  </div>
+</section>
+
+<!-- ── STUDIO ── -->
+<section class="studio">
+  <h3>About the Studio</h3>
+  <p>
+    Misfit Mountain Games is a small independent studio. <em>Misfit
+    Monsters</em> is our first flagship title — built to be the kind of
+    game we wished existed when we pulled out our phones: generous with
+    its art, earnest about its craft, and welcoming to every level of
+    player.
+  </p>
+  <p>
+    Questions, feedback, or press inquiries:
+    <a href="mailto:ed@mountainstudio.cloud">ed@mountainstudio.cloud</a>
+  </p>
+</section>
+
+<!-- ── FOOTER ── -->
+<footer>
+  <div>
+    © <span id="yr"></span> Misfit Mountain Games
+    <span class="dot">·</span>
+    <a href="https://edmacomber.github.io/MisfitMonsters-Phaser/">Play</a>
+    <span class="dot">·</span>
+    <a href="mailto:ed@mountainstudio.cloud">Contact</a>
+  </div>
+</footer>
+
+<div class="scroll-hint" aria-hidden="true"></div>
+
+<script>
+  // Copyright year stays fresh without a server template.
+  document.getElementById('yr').textContent = new Date().getFullYear();
+
+  // Scroll-hint visibility: visible while there's more to scroll to,
+  // hidden when the user reaches the bottom of the page. Also hidden
+  // entirely on pages that already fit in the viewport (nothing to
+  // hint at). Dynamic — if the user scrolls back up from the bottom,
+  // the hint reappears because there's below-fold content again.
+  (function() {
+    var hint = document.querySelector('.scroll-hint');
+    if (!hint) return;
+    if (document.body.scrollHeight <= window.innerHeight + 40) {
+      hint.style.display = 'none';
+      return;
+    }
+    var update = function() {
+      var atBottom = (window.scrollY + window.innerHeight) >=
+        (document.body.scrollHeight - 40);
+      hint.classList.toggle('hide', atBottom);
+    };
+    window.addEventListener('scroll', update, { passive: true });
+    update();
+  })();
+</script>
+
+</body>
+</html>
