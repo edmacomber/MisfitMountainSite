@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Misfit Mountain Games leaderboard — top players across our games. Pick a game tab to see its top 20.">
+<meta name="theme-color" content="#0a0a1a">
+
+<meta property="og:title" content="Leaderboard — Misfit Mountain Games">
+<meta property="og:description" content="Top players across Misfit Monsters and Angry Monsters.">
+<meta property="og:url" content="https://mountainstudio.cloud/leaderboard/">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://edmacomber.github.io/MisfitMonsters-Phaser/assets/backgrounds/bg-leaderboard.jpg">
+<meta name="twitter:card" content="summary_large_image">
+
+<link rel="icon" type="image/png" href="https://edmacomber.github.io/MisfitMonsters-Phaser/assets/studio/logo-mmg.png">
+<link rel="apple-touch-icon" href="https://edmacomber.github.io/MisfitMonsters-Phaser/assets/studio/logo-mmg.png">
+
+<title>Leaderboard — Misfit Mountain Games</title>
+
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: #0a0a1a;
+    color: #e0d8ff;
+    font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    font-size: 16px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    min-height: 100vh;
+  }
+  a { color: #ffe066; text-decoration: none; }
+  a:hover { color: #fff5b0; }
+
+  /* ── Background layer (full-bleed, fixed). Swaps per tab via the
+       body[data-game] selector so the painting reads as the canvas
+       behind the leaderboard panel rather than a hero crop. ── */
+  .bg {
+    position: fixed; inset: 0;
+    z-index: -1;
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+    transition: opacity 480ms ease;
+  }
+  .bg.fade { opacity: 0; }
+  body[data-game="misfit-monsters"] .bg {
+    background-image:
+      linear-gradient(180deg, rgba(10,10,26,0.45) 0%, rgba(10,10,26,0.65) 60%, rgba(10,10,26,0.92) 100%),
+      url('https://edmacomber.github.io/MisfitMonsters-Phaser/assets/backgrounds/bg-leaderboard.jpg');
+  }
+  body[data-game="angry-monsters"] .bg {
+    background-image:
+      linear-gradient(180deg, rgba(10,10,26,0.45) 0%, rgba(10,10,26,0.65) 60%, rgba(10,10,26,0.92) 100%),
+      url('https://edmacomber.github.io/AngryMonsters-Phaser/assets/backgrounds/bg-leaderboard.jpg');
+  }
+  @media (orientation: portrait) and (max-width: 900px) {
+    body[data-game="misfit-monsters"] .bg {
+      background-image:
+        linear-gradient(180deg, rgba(10,10,26,0.45) 0%, rgba(10,10,26,0.65) 60%, rgba(10,10,26,0.92) 100%),
+        url('https://edmacomber.github.io/MisfitMonsters-Phaser/assets/backgrounds/bg-leaderboard-portrait.jpg');
+    }
+    body[data-game="angry-monsters"] .bg {
+      background-image:
+        linear-gradient(180deg, rgba(10,10,26,0.45) 0%, rgba(10,10,26,0.65) 60%, rgba(10,10,26,0.92) 100%),
+        url('https://edmacomber.github.io/AngryMonsters-Phaser/assets/backgrounds/bg-leaderboard-portrait.jpg');
+    }
+  }
+
+  /* ── Top header strip ── */
+  header.bar {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 20px;
+    gap: 12px;
+  }
+  .home-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    color: rgba(255, 224, 102, 0.92);
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    font-size: 11px;
+  }
+  .home-link img {
+    width: 36px;
+    height: 36px;
+    filter:
+      drop-shadow(0 0 14px rgba(212, 168, 67, 0.45))
+      drop-shadow(0 0 8px rgba(156, 92, 255, 0.35));
+  }
+  .home-link span { display: none; }
+  @media (min-width: 540px) { .home-link span { display: inline; } }
+
+  .header-link {
+    color: rgba(220, 200, 255, 0.7);
+    font-size: 12px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-weight: 600;
+    padding: 8px 14px;
+    border-radius: 8px;
+    border: 1px solid rgba(156, 92, 255, 0.35);
+    background: rgba(26, 16, 40, 0.55);
+    transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+  }
+  .header-link:hover {
+    color: #ffe066;
+    border-color: rgba(255, 224, 102, 0.5);
+    background: rgba(42, 24, 69, 0.7);
+  }
+
+  /* ── Page title ── */
+  .title-block {
+    text-align: center;
+    padding: 12px 20px 0;
+  }
+  /* Wisper mascot — Audrey's painted ghost-mascot floats above the
+     title, gives the page a face. Sized to feel decorative not loud,
+     with a soft drop-shadow that matches the studio-badge glow. */
+  .title-block .mascot {
+    width: clamp(96px, 14vw, 132px);
+    height: auto;
+    display: block;
+    margin: 0 auto 6px;
+    filter:
+      drop-shadow(0 0 22px rgba(212, 168, 67, 0.35))
+      drop-shadow(0 0 12px rgba(156, 92, 255, 0.4))
+      drop-shadow(0 8px 18px rgba(10, 10, 26, 0.7));
+    animation: mascot-float 4.2s ease-in-out infinite;
+  }
+  @keyframes mascot-float {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-6px); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .title-block .mascot { animation: none; }
+  }
+  .title-block .eyebrow {
+    color: rgba(255, 224, 102, 0.85);
+    font-size: 11px;
+    letter-spacing: 6px;
+    font-weight: 600;
+    text-transform: uppercase;
+    margin: 0 0 8px;
+  }
+  .title-block .eyebrow::before, .title-block .eyebrow::after {
+    content: '—'; opacity: 0.5; padding: 0 10px;
+  }
+  .title-block h1 {
+    font-size: clamp(34px, 6vw, 56px);
+    font-weight: 900;
+    color: #ffe066;
+    margin: 0 0 8px;
+    letter-spacing: -0.5px;
+    text-shadow:
+      0 0 32px rgba(255, 224, 102, 0.4),
+      0 4px 24px rgba(10, 10, 26, 0.95);
+  }
+  .title-block .sub {
+    color: rgba(220, 210, 255, 0.78);
+    font-size: 14px;
+    margin: 0;
+    text-shadow: 0 2px 10px rgba(10, 10, 26, 0.85);
+  }
+
+  /* ── Pill tabs (touch-friendly: 48px tall, big tap area) ── */
+  .tabs {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    padding: 24px 20px 16px;
+    flex-wrap: wrap;
+  }
+  .tab {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 48px;
+    padding: 12px 22px;
+    border-radius: 999px;
+    border: 1.5px solid rgba(156, 92, 255, 0.45);
+    background: rgba(26, 16, 40, 0.7);
+    color: rgba(220, 200, 255, 0.8);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition:
+      background 0.18s ease,
+      color 0.18s ease,
+      border-color 0.18s ease,
+      box-shadow 0.18s ease,
+      transform 0.12s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .tab:hover { color: #ffe066; border-color: rgba(255, 224, 102, 0.45); }
+  .tab[aria-pressed="true"] {
+    background: linear-gradient(180deg, #ffe066 0%, #d4a32f 100%);
+    color: #1a0f2e;
+    border-color: rgba(255, 245, 200, 0.6);
+    box-shadow:
+      0 8px 22px rgba(255, 224, 102, 0.32),
+      0 0 0 1px rgba(255, 245, 200, 0.5) inset;
+  }
+  .tab:active { transform: translateY(1px); }
+
+  /* ── Leaderboard panel ── */
+  .panel {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 0 20px 80px;
+  }
+  .panel-card {
+    background: linear-gradient(180deg, rgba(26, 16, 40, 0.86) 0%, rgba(18, 10, 28, 0.86) 100%);
+    border: 1px solid rgba(156, 92, 255, 0.32);
+    border-radius: 16px;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    overflow: hidden;
+    box-shadow: 0 20px 50px rgba(10, 10, 26, 0.6);
+  }
+  .panel-head {
+    display: grid;
+    grid-template-columns: 48px 1fr auto auto;
+    gap: 14px;
+    padding: 14px 18px;
+    background: rgba(10, 10, 26, 0.5);
+    border-bottom: 1px solid rgba(156, 92, 255, 0.22);
+    color: rgba(200, 180, 255, 0.55);
+    font-size: 10px;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    font-weight: 700;
+  }
+  .panel-head .col-stars { text-align: right; min-width: 60px; }
+  .panel-head .col-score { text-align: right; min-width: 80px; }
+
+  .row {
+    display: grid;
+    grid-template-columns: 48px 1fr auto auto;
+    gap: 14px;
+    align-items: center;
+    padding: 14px 18px;
+    border-bottom: 1px solid rgba(156, 92, 255, 0.12);
+    transition: background 0.15s ease;
+  }
+  .row:last-child { border-bottom: none; }
+  .row:hover { background: rgba(58, 42, 90, 0.18); }
+
+  .rank {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+    font-size: 14px;
+    background: rgba(58, 42, 90, 0.6);
+    color: rgba(220, 200, 255, 0.9);
+    border: 1px solid rgba(156, 92, 255, 0.4);
+  }
+  .rank.gold {
+    background: linear-gradient(180deg, #ffe066 0%, #d4a32f 100%);
+    color: #1a0f2e;
+    border-color: rgba(255, 245, 200, 0.7);
+    box-shadow: 0 0 16px rgba(255, 224, 102, 0.45);
+  }
+  .rank.silver {
+    background: linear-gradient(180deg, #e6e9f0 0%, #a9b0bf 100%);
+    color: #1a0f2e;
+    border-color: rgba(255, 255, 255, 0.6);
+  }
+  .rank.bronze {
+    background: linear-gradient(180deg, #d99368 0%, #a25c33 100%);
+    color: #1a0f2e;
+    border-color: rgba(255, 200, 160, 0.55);
+  }
+
+  .who {
+    min-width: 0;
+  }
+  .who .name {
+    color: #ffe066;
+    font-weight: 700;
+    font-size: 16px;
+    letter-spacing: 0.3px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .who .meta {
+    color: rgba(200, 180, 255, 0.65);
+    font-size: 11px;
+    letter-spacing: 0.5px;
+    margin-top: 2px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .who .meta .pin {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #c08cff;
+    margin-right: 6px;
+    vertical-align: 1px;
+    box-shadow: 0 0 6px rgba(192, 140, 255, 0.7);
+  }
+  .who .meta .dot { color: rgba(156, 92, 255, 0.45); padding: 0 6px; }
+
+  .stars {
+    color: #ffe066;
+    font-weight: 800;
+    font-size: 15px;
+    text-align: right;
+    min-width: 60px;
+    white-space: nowrap;
+  }
+  .stars::before {
+    content: '★';
+    color: #ffe066;
+    margin-right: 4px;
+    text-shadow: 0 0 8px rgba(255, 224, 102, 0.5);
+  }
+  .score {
+    color: rgba(220, 210, 255, 0.95);
+    font-weight: 700;
+    font-size: 14px;
+    text-align: right;
+    min-width: 80px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ── Status states ── */
+  .status {
+    text-align: center;
+    padding: 60px 20px;
+    color: rgba(200, 180, 255, 0.65);
+    font-size: 14px;
+  }
+  .status .spinner {
+    display: inline-block;
+    width: 28px;
+    height: 28px;
+    border: 2px solid rgba(156, 92, 255, 0.25);
+    border-top-color: #ffe066;
+    border-radius: 50%;
+    animation: spin 0.9s linear infinite;
+    margin-bottom: 14px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .status .retry {
+    display: inline-block;
+    margin-top: 14px;
+    padding: 10px 22px;
+    border-radius: 8px;
+    border: 1px solid rgba(156, 92, 255, 0.5);
+    background: rgba(42, 24, 69, 0.7);
+    color: #ffe066;
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+  .status .retry:hover { background: rgba(58, 42, 90, 0.9); }
+
+  /* ── Footer ── */
+  footer {
+    border-top: 1px solid rgba(156, 92, 255, 0.18);
+    padding: 24px 20px 32px;
+    text-align: center;
+    color: rgba(200, 180, 255, 0.55);
+    font-size: 12px;
+  }
+  footer a { color: rgba(200, 180, 255, 0.78); }
+  footer .dot { color: rgba(156, 92, 255, 0.4); padding: 0 8px; }
+
+  /* ── Mobile refinements ── */
+  @media (max-width: 540px) {
+    .panel-head { grid-template-columns: 40px 1fr auto; padding: 12px 14px; }
+    .panel-head .col-score { display: none; }
+    .row { grid-template-columns: 40px 1fr auto; padding: 12px 14px; gap: 10px; }
+    .row .score { display: none; }
+    .rank { width: 32px; height: 32px; font-size: 13px; }
+    .who .name { font-size: 15px; }
+    .tab { padding: 10px 18px; font-size: 12px; letter-spacing: 1.5px; }
+    .title-block h1 { font-size: 34px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .bg { transition: none; }
+    .status .spinner { animation: none; border-top-color: rgba(156, 92, 255, 0.6); }
+  }
+</style>
+</head>
+<body data-game="misfit-monsters">
+
+<div class="bg" aria-hidden="true"></div>
+
+<header class="bar">
+  <a class="home-link" href="/" aria-label="Misfit Mountain Games home">
+    <img src="https://edmacomber.github.io/MisfitMonsters-Phaser/assets/studio/logo-mmg.png" alt="">
+    <span>Misfit Mountain</span>
+  </a>
+  <a class="header-link" href="/" aria-label="Back to studio home">Studio</a>
+</header>
+
+<section class="title-block">
+  <img class="mascot"
+       src="https://edmacomber.github.io/MisfitMonsters-Phaser/assets/studio/leaderboard-mascot.png"
+       alt="">
+  <div class="eyebrow">Top Players</div>
+  <h1>Leaderboard</h1>
+  <p class="sub">Total stars across all levels played, then total score as the tiebreak.</p>
+</section>
+
+<nav class="tabs" role="tablist" aria-label="Game leaderboards">
+  <button class="tab" role="tab" aria-pressed="true" data-game="misfit-monsters">Misfit Monsters</button>
+  <button class="tab" role="tab" aria-pressed="false" data-game="angry-monsters">Angry Monsters</button>
+</nav>
+
+<main class="panel">
+  <div class="panel-card">
+    <div class="panel-head" role="row">
+      <div role="columnheader">#</div>
+      <div role="columnheader">Player</div>
+      <div role="columnheader" class="col-stars">Stars</div>
+      <div role="columnheader" class="col-score">Score</div>
+    </div>
+    <div id="rows" role="rowgroup">
+      <div class="status" id="status">
+        <div class="spinner" aria-hidden="true"></div>
+        <div>Loading…</div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div>
+    © <span id="yr"></span> Misfit Mountain Games
+    <span class="dot">·</span>
+    <a href="/">Studio</a>
+    <span class="dot">·</span>
+    <a href="/misfitmonsters/">Misfit Monsters</a>
+    <span class="dot">·</span>
+    <a href="/angrymonsters/">Angry Monsters</a>
+  </div>
+</footer>
+
+<script>
+  document.getElementById('yr').textContent = new Date().getFullYear();
+
+  // ── Tab state + URL sync ──────────────────────────────────────────
+  // Default game comes from ?game=misfit-monsters|angry-monsters; falls
+  // back to misfit-monsters. Short aliases (?game=mm|am) are accepted
+  // so the link from each game's landing page can stay terse.
+  var GAMES = {
+    'misfit-monsters': { id: 'misfit-monsters', label: 'Misfit Monsters' },
+    'angry-monsters':  { id: 'angry-monsters',  label: 'Angry Monsters' },
+  };
+  var ALIASES = { mm: 'misfit-monsters', am: 'angry-monsters' };
+
+  function readInitialGame() {
+    var p = new URLSearchParams(location.search);
+    var raw = (p.get('game') || '').toLowerCase();
+    if (ALIASES[raw]) return ALIASES[raw];
+    if (GAMES[raw]) return raw;
+    return 'misfit-monsters';
+  }
+
+  var current = readInitialGame();
+  document.body.dataset.game = current;
+  document.title = 'Leaderboard · ' + GAMES[current].label + ' — Misfit Mountain Games';
+
+  // ── Render helpers ────────────────────────────────────────────────
+  var $rows = document.getElementById('rows');
+  var fetchToken = 0; // guards against late responses overwriting newer ones
+
+  function escapeHTML(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function(c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+  function fmtNum(n) {
+    if (n == null) return '—';
+    return Number(n).toLocaleString();
+  }
+  function rankClass(i) {
+    if (i === 0) return 'gold';
+    if (i === 1) return 'silver';
+    if (i === 2) return 'bronze';
+    return '';
+  }
+
+  function renderLoading() {
+    $rows.innerHTML =
+      '<div class="status">' +
+        '<div class="spinner" aria-hidden="true"></div>' +
+        '<div>Loading ' + escapeHTML(GAMES[current].label) + '…</div>' +
+      '</div>';
+  }
+  function renderError(msg) {
+    $rows.innerHTML =
+      '<div class="status">' +
+        '<div>Couldn’t load the leaderboard.</div>' +
+        '<div style="opacity:0.6;font-size:12px;margin-top:6px">' + escapeHTML(msg) + '</div>' +
+        '<button class="retry" id="retryBtn">Try again</button>' +
+      '</div>';
+    var btn = document.getElementById('retryBtn');
+    if (btn) btn.addEventListener('click', loadCurrent);
+  }
+  function renderEmpty() {
+    $rows.innerHTML =
+      '<div class="status">' +
+        '<div>No scores yet for ' + escapeHTML(GAMES[current].label) + '.</div>' +
+        '<div style="opacity:0.6;font-size:12px;margin-top:6px">Be the first — go play a level!</div>' +
+      '</div>';
+  }
+  function renderRows(entries) {
+    if (!entries || entries.length === 0) { renderEmpty(); return; }
+    var html = '';
+    for (var i = 0; i < entries.length; i++) {
+      var e = entries[i];
+      var name = e.player_name || 'Anonymous';
+      var loc = e.player_location || '';
+      var stars = (e.total_stars != null) ? e.total_stars : 0;
+      var score = (e.total_score != null) ? e.total_score : 0;
+      var levels = (e.levels_played != null) ? e.levels_played : 0;
+      var meta = '';
+      if (loc) meta += '<span class="pin"></span>' + escapeHTML(loc) + '<span class="dot">·</span>';
+      meta += levels + ' level' + (levels === 1 ? '' : 's');
+
+      html +=
+        '<div class="row" role="row">' +
+          '<div class="rank ' + rankClass(i) + '">' + (i + 1) + '</div>' +
+          '<div class="who">' +
+            '<div class="name">' + escapeHTML(name) + '</div>' +
+            '<div class="meta">' + meta + '</div>' +
+          '</div>' +
+          '<div class="stars">' + fmtNum(stars) + '</div>' +
+          '<div class="score">' + fmtNum(score) + '</div>' +
+        '</div>';
+    }
+    $rows.innerHTML = html;
+  }
+
+  // ── Fetch ─────────────────────────────────────────────────────────
+  function loadCurrent() {
+    var token = ++fetchToken;
+    var gameId = current;
+    renderLoading();
+    var url = '/api/leaderboard/top?limit=20&gameId=' + encodeURIComponent(gameId);
+    var ctrl = ('AbortController' in window) ? new AbortController() : null;
+    var timer = setTimeout(function() { if (ctrl) ctrl.abort(); }, 8000);
+    fetch(url, ctrl ? { signal: ctrl.signal } : undefined)
+      .then(function(res) {
+        clearTimeout(timer);
+        if (token !== fetchToken) return null; // stale response, drop
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return res.json();
+      })
+      .then(function(data) {
+        if (data == null) return; // stale
+        if (token !== fetchToken) return;
+        renderRows(data && data.entries ? data.entries : []);
+      })
+      .catch(function(err) {
+        clearTimeout(timer);
+        if (token !== fetchToken) return;
+        renderError(err && err.message ? err.message : 'Network error');
+      });
+  }
+
+  // ── Tab wiring ────────────────────────────────────────────────────
+  function setActive(gameId, opts) {
+    if (!GAMES[gameId] || gameId === current) return;
+    current = gameId;
+    document.body.dataset.game = gameId;
+    document.title = 'Leaderboard · ' + GAMES[gameId].label + ' — Misfit Mountain Games';
+    var tabs = document.querySelectorAll('.tab');
+    for (var i = 0; i < tabs.length; i++) {
+      var on = tabs[i].dataset.game === gameId;
+      tabs[i].setAttribute('aria-pressed', on ? 'true' : 'false');
+    }
+    if (!opts || !opts.fromPop) {
+      var p = new URLSearchParams(location.search);
+      p.set('game', gameId);
+      history.replaceState({ game: gameId }, '', location.pathname + '?' + p.toString());
+    }
+    loadCurrent();
+  }
+
+  var tabEls = document.querySelectorAll('.tab');
+  for (var i = 0; i < tabEls.length; i++) {
+    (function(t) {
+      var on = t.dataset.game === current;
+      t.setAttribute('aria-pressed', on ? 'true' : 'false');
+      t.addEventListener('click', function() { setActive(t.dataset.game); });
+    })(tabEls[i]);
+  }
+  window.addEventListener('popstate', function() {
+    var g = readInitialGame();
+    if (g !== current) setActive(g, { fromPop: true });
+  });
+
+  // Initial load
+  loadCurrent();
+</script>
+
+</body>
+</html>

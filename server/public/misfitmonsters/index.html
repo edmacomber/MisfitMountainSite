@@ -390,6 +390,34 @@
     .hero::before { animation: none; opacity: 0.3; }
   }
 
+  /* Top-right header link — small "Leaderboard" pill that floats over
+     the hero. Routes to the shared leaderboard with this game's tab
+     pre-selected via ?game=mm. Touch-friendly height; fades the
+     border to gold on hover. */
+  .header-link {
+    position: absolute;
+    top: 18px;
+    right: 18px;
+    z-index: 5;
+    color: rgba(220, 200, 255, 0.85);
+    font-size: 12px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-weight: 700;
+    padding: 10px 16px;
+    border-radius: 999px;
+    border: 1px solid rgba(156, 92, 255, 0.55);
+    background: rgba(26, 16, 40, 0.65);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+  }
+  .header-link:hover {
+    color: #ffe066;
+    border-color: rgba(255, 224, 102, 0.55);
+    background: rgba(42, 24, 69, 0.85);
+  }
+
   /* Scroll-down hint — dim, gently bobbing double-chevron at the
      bottom of the initial viewport. Cues "there's more below" on
      pages where the hero fills the viewport. Auto-hides on first
@@ -439,6 +467,7 @@
 
 <!-- ── HERO ── -->
 <section class="hero">
+  <a class="header-link" href="/leaderboard/?game=mm">Leaderboard</a>
   <a href="/" aria-label="Misfit Mountain Games home">
     <img class="studio-badge"
          src="https://edmacomber.github.io/MisfitMonsters-Phaser/assets/studio/logo-mmg.png"
