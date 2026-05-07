@@ -656,6 +656,7 @@
   // resolve to MM's gh-pages instead of mountainstudio.cloud.
   var GLOBE_MODULE_URL  = 'https://edmacomber.github.io/MisfitMonsters-Phaser/src/globe.js';
   var GLOBE_EARTH_URL   = 'https://edmacomber.github.io/MisfitMonsters-Phaser/assets/globe/earth-night.png';
+  var GLOBE_DAY_URL     = 'https://edmacomber.github.io/MisfitMonsters-Phaser/assets/globe/earth-day.jpg';
   var GLOBE_COUNTRY_URL = 'https://edmacomber.github.io/MisfitMonsters-Phaser/assets/globe/countries.geojson';
 
   function loadGlobeModule() {
@@ -692,6 +693,7 @@
           entries: entries || [],
           myPlayerId: null,           // public site has no auth context
           earthTexUrl: GLOBE_EARTH_URL,
+          earthDayTexUrl: GLOBE_DAY_URL,
           countriesUrl: GLOBE_COUNTRY_URL,
           tiltDeg: 0,
         });
