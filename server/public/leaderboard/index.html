@@ -121,26 +121,19 @@
     text-align: center;
     padding: 12px 20px 0;
   }
-  /* Wisper mascot — Audrey's painted ghost-mascot floats above the
-     title, gives the page a face. Sized to feel decorative not loud,
-     with a soft drop-shadow that matches the studio-badge glow. */
+  /* Studio crest — the cat-on-moonlit-peak badge floats above the
+     title and anchors the page to the brand. Same gold/purple glow
+     stack as the homepage hero logo so the leaderboard feels like a
+     proper studio destination rather than a bare data table. */
   .title-block .mascot {
-    width: clamp(96px, 14vw, 132px);
+    width: clamp(120px, 16vw, 160px);
     height: auto;
     display: block;
     margin: 0 auto 6px;
     filter:
-      drop-shadow(0 0 22px rgba(212, 168, 67, 0.35))
-      drop-shadow(0 0 12px rgba(156, 92, 255, 0.4))
-      drop-shadow(0 8px 18px rgba(10, 10, 26, 0.7));
-    animation: mascot-float 4.2s ease-in-out infinite;
-  }
-  @keyframes mascot-float {
-    0%, 100% { transform: translateY(0); }
-    50%      { transform: translateY(-6px); }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .title-block .mascot { animation: none; }
+      drop-shadow(0 0 24px rgba(212, 168, 67, 0.5))
+      drop-shadow(0 0 14px rgba(156, 92, 255, 0.4))
+      drop-shadow(0 10px 22px rgba(10, 10, 26, 0.75));
   }
   .title-block .eyebrow {
     color: rgba(255, 224, 102, 0.85);
@@ -417,9 +410,11 @@
 </header>
 
 <section class="title-block">
-  <img class="mascot"
-       src="https://edmacomber.github.io/MisfitMonsters-Phaser/assets/studio/leaderboard-mascot.png"
-       alt="">
+  <a href="/" aria-label="Misfit Mountain Games home">
+    <img class="mascot"
+         src="https://edmacomber.github.io/MisfitMonsters-Phaser/assets/studio/logo-mmg.png"
+         alt="">
+  </a>
   <div class="eyebrow">Top Players</div>
   <h1>Leaderboard</h1>
   <p class="sub">Total stars across all levels played, then total score as the tiebreak.</p>
