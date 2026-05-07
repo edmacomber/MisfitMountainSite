@@ -34,38 +34,27 @@
   a { color: #ffe066; text-decoration: none; }
   a:hover { color: #fff5b0; }
 
-  /* ── Background layer (full-bleed, fixed). Swaps per tab via the
-       body[data-game] selector so the painting reads as the canvas
-       behind the leaderboard panel rather than a hero crop. ── */
+  /* ── Background layer (full-bleed, fixed). One canonical cross-game
+       backdrop instead of the earlier per-tab swap — the leaderboard
+       reads as a single destination rather than borrowing each game's
+       art. Currently using MM's bg-leaderboard.jpg as a placeholder
+       until Audrey's dedicated cross-game leaderboard painting (the
+       active commission) lands; only the URL needs to swap. ── */
   .bg {
     position: fixed; inset: 0;
     z-index: -1;
     background-position: center;
     background-size: cover;
     background-repeat: no-repeat;
-    transition: opacity 480ms ease;
-  }
-  .bg.fade { opacity: 0; }
-  body[data-game="misfit-monsters"] .bg {
     background-image:
       linear-gradient(180deg, rgba(10,10,26,0.45) 0%, rgba(10,10,26,0.65) 60%, rgba(10,10,26,0.92) 100%),
       url('https://edmacomber.github.io/MisfitMonsters-Phaser/assets/backgrounds/bg-leaderboard.jpg');
   }
-  body[data-game="angry-monsters"] .bg {
-    background-image:
-      linear-gradient(180deg, rgba(10,10,26,0.45) 0%, rgba(10,10,26,0.65) 60%, rgba(10,10,26,0.92) 100%),
-      url('https://edmacomber.github.io/AngryMonsters-Phaser/assets/backgrounds/bg-leaderboard.jpg');
-  }
   @media (orientation: portrait) and (max-width: 900px) {
-    body[data-game="misfit-monsters"] .bg {
+    .bg {
       background-image:
         linear-gradient(180deg, rgba(10,10,26,0.45) 0%, rgba(10,10,26,0.65) 60%, rgba(10,10,26,0.92) 100%),
         url('https://edmacomber.github.io/MisfitMonsters-Phaser/assets/backgrounds/bg-leaderboard-portrait.jpg');
-    }
-    body[data-game="angry-monsters"] .bg {
-      background-image:
-        linear-gradient(180deg, rgba(10,10,26,0.45) 0%, rgba(10,10,26,0.65) 60%, rgba(10,10,26,0.92) 100%),
-        url('https://edmacomber.github.io/AngryMonsters-Phaser/assets/backgrounds/bg-leaderboard-portrait.jpg');
     }
   }
 
@@ -204,6 +193,86 @@
       0 0 0 1px rgba(255, 245, 200, 0.5) inset;
   }
   .tab:active { transform: translateY(1px); }
+
+  /* ── View toggle (List / Globe) ──
+     Smaller secondary control under the game tabs. The pill tabs above
+     pick which game to see; this picks how to render that game's data
+     — flat list versus 3D earth with player pins at their geocoded
+     locations. Globe view dynamically imports three.js + globe.js on
+     first activation; swapping back to list disposes the WebGL context. */
+  .view-toggle {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    padding: 0 20px 20px;
+    flex-wrap: wrap;
+  }
+  .view-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 36px;
+    padding: 8px 16px;
+    border-radius: 999px;
+    border: 1px solid rgba(156, 92, 255, 0.32);
+    background: rgba(26, 16, 40, 0.55);
+    color: rgba(220, 200, 255, 0.7);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .view-btn:hover { color: #ffe066; border-color: rgba(255, 224, 102, 0.4); }
+  .view-btn[aria-pressed="true"] {
+    background: rgba(58, 42, 90, 0.85);
+    color: #ffe066;
+    border-color: rgba(255, 224, 102, 0.55);
+  }
+
+  /* ── Globe host ──
+     Square container that the globe.js canvas absolute-positions into.
+     Same panel-card gradient + border so the swap from list to globe
+     reads as a "different view of the same panel" rather than a
+     completely different surface. */
+  .globe-host {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    max-width: 760px;
+    margin: 0 auto;
+    background: linear-gradient(180deg, rgba(26, 16, 40, 0.86) 0%, rgba(18, 10, 28, 0.86) 100%);
+    border: 1px solid rgba(156, 92, 255, 0.32);
+    border-radius: 16px;
+    overflow: hidden;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    box-shadow: 0 20px 50px rgba(10, 10, 26, 0.6);
+  }
+  .globe-host[hidden] { display: none; }
+  /* Hint while three.js + textures load on first globe-view activation. */
+  .globe-host .globe-loading {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: rgba(200, 180, 255, 0.65);
+    font-size: 12px;
+    letter-spacing: 1.5px;
+    pointer-events: none;
+  }
+  .globe-host .globe-loading .spinner {
+    width: 32px; height: 32px;
+    border: 2px solid rgba(156, 92, 255, 0.25);
+    border-top-color: #ffe066;
+    border-radius: 50%;
+    animation: spin 0.9s linear infinite;
+    margin-bottom: 12px;
+  }
 
   /* ── Leaderboard panel ── */
   .panel {
@@ -425,8 +494,13 @@
   <button class="tab" role="tab" aria-pressed="false" data-game="angry-monsters">Angry Monsters</button>
 </nav>
 
+<div class="view-toggle" role="tablist" aria-label="Visualization">
+  <button class="view-btn" role="tab" aria-pressed="true"  data-view="list">List</button>
+  <button class="view-btn" role="tab" aria-pressed="false" data-view="globe">Globe</button>
+</div>
+
 <main class="panel">
-  <div class="panel-card">
+  <div class="panel-card" id="list-view">
     <div class="panel-head" role="row">
       <div role="columnheader">#</div>
       <div role="columnheader">Player</div>
@@ -439,6 +513,9 @@
         <div>Loading…</div>
       </div>
     </div>
+  </div>
+  <div class="globe-host" id="globe-view" hidden>
+    <div class="globe-loading"><div class="spinner" aria-hidden="true"></div>Loading globe…</div>
   </div>
 </main>
 
@@ -479,8 +556,28 @@
   document.body.dataset.game = current;
   document.title = 'Leaderboard · ' + GAMES[current].label + ' — Misfit Mountain Games';
 
+  // ── View state (List / Globe) ─────────────────────────────────────
+  // List is the default; Globe lazy-loads three.js + globe.js the first
+  // time it's activated. Both views share the same fetched entries; we
+  // cache the latest fetch on `latestEntries` so flipping the view
+  // doesn't trigger a re-fetch. Game-tab change still re-fetches (and
+  // routes to whichever view is active).
+  var VIEWS = { list: true, globe: true };
+  function readInitialView() {
+    var p = new URLSearchParams(location.search);
+    var raw = (p.get('view') || '').toLowerCase();
+    return VIEWS[raw] ? raw : 'list';
+  }
+  var currentView = readInitialView();
+  var latestEntries = null;     // last successfully fetched entries
+  var globeInstance = null;     // active globe.js handle, or null
+  var globeCreating = false;    // in-flight createGlobe to coalesce
+  var globeModulePromise = null; // dynamic-imported globe module, cached
+
   // ── Render helpers ────────────────────────────────────────────────
   var $rows = document.getElementById('rows');
+  var $listView = document.getElementById('list-view');
+  var $globeView = document.getElementById('globe-view');
   var fetchToken = 0; // guards against late responses overwriting newer ones
 
   function escapeHTML(s) {
@@ -551,11 +648,92 @@
     $rows.innerHTML = html;
   }
 
+  // ── Globe rendering ───────────────────────────────────────────────
+  // Three.js + globe.js load cross-origin from MM's gh-pages on first
+  // Globe-view activation; cached after. earthTexUrl + countriesUrl
+  // are passed as absolute URLs so globe.js's relative-default fetches
+  // resolve to MM's gh-pages instead of mountainstudio.cloud.
+  var GLOBE_MODULE_URL  = 'https://edmacomber.github.io/MisfitMonsters-Phaser/src/globe.js';
+  var GLOBE_EARTH_URL   = 'https://edmacomber.github.io/MisfitMonsters-Phaser/assets/globe/earth-night.png';
+  var GLOBE_COUNTRY_URL = 'https://edmacomber.github.io/MisfitMonsters-Phaser/assets/globe/countries.geojson';
+
+  function loadGlobeModule() {
+    if (!globeModulePromise) {
+      globeModulePromise = import(GLOBE_MODULE_URL);
+    }
+    return globeModulePromise;
+  }
+
+  function destroyGlobe() {
+    if (globeInstance) {
+      try { globeInstance.destroy(); } catch (e) {}
+      globeInstance = null;
+    }
+  }
+
+  function renderGlobe(entries) {
+    if (currentView !== 'globe') return; // dispatcher guard
+    // Tear down any previous globe before rebuilding (game-tab switch
+    // while in globe view, or stale instance from a prior view flip).
+    destroyGlobe();
+    if (globeCreating) return; // an earlier renderGlobe is mid-flight
+    var rect = $globeView.getBoundingClientRect();
+    var w = Math.max(1, Math.floor(rect.width));
+    var h = Math.max(1, Math.floor(rect.height));
+    globeCreating = true;
+    loadGlobeModule()
+      .then(function(mod) {
+        if (currentView !== 'globe') { globeCreating = false; return null; }
+        return mod.createGlobe({
+          host: $globeView,
+          width: w,
+          height: h,
+          entries: entries || [],
+          myPlayerId: null,           // public site has no auth context
+          earthTexUrl: GLOBE_EARTH_URL,
+          countriesUrl: GLOBE_COUNTRY_URL,
+          tiltDeg: 0,
+        });
+      })
+      .then(function(globe) {
+        globeCreating = false;
+        if (!globe) return;
+        if (currentView !== 'globe') {
+          // User flipped back to list while we were creating; throw it away.
+          try { globe.destroy(); } catch (e) {}
+          return;
+        }
+        globeInstance = globe;
+        var loadingEl = $globeView.querySelector('.globe-loading');
+        if (loadingEl) loadingEl.style.display = 'none';
+      })
+      .catch(function() {
+        globeCreating = false;
+        var loadingEl = $globeView.querySelector('.globe-loading');
+        if (loadingEl) loadingEl.textContent = 'Globe failed to load.';
+      });
+  }
+
+  // ── View dispatcher ───────────────────────────────────────────────
+  // Routes the cached entries to whichever renderer matches the active
+  // view. List always re-renders (cheap DOM); Globe rebuilds the WebGL
+  // scene (lazy module load on first activation, then ~instant).
+  function renderCurrentView() {
+    if (latestEntries == null) return; // nothing fetched yet
+    if (currentView === 'globe') {
+      renderGlobe(latestEntries);
+    } else {
+      renderRows(latestEntries);
+    }
+  }
+
   // ── Fetch ─────────────────────────────────────────────────────────
   function loadCurrent() {
     var token = ++fetchToken;
     var gameId = current;
-    renderLoading();
+    if (currentView === 'list') {
+      renderLoading();
+    }
     var url = '/api/leaderboard/top?limit=20&gameId=' + encodeURIComponent(gameId);
     var ctrl = ('AbortController' in window) ? new AbortController() : null;
     var timer = setTimeout(function() { if (ctrl) ctrl.abort(); }, 8000);
@@ -569,14 +747,77 @@
       .then(function(data) {
         if (data == null) return; // stale
         if (token !== fetchToken) return;
-        renderRows(data && data.entries ? data.entries : []);
+        latestEntries = (data && data.entries) ? data.entries : [];
+        renderCurrentView();
       })
       .catch(function(err) {
         clearTimeout(timer);
         if (token !== fetchToken) return;
-        renderError(err && err.message ? err.message : 'Network error');
+        if (currentView === 'list') {
+          renderError(err && err.message ? err.message : 'Network error');
+        } else {
+          var loadingEl = $globeView.querySelector('.globe-loading');
+          if (loadingEl) loadingEl.textContent = 'Couldn’t load leaderboard.';
+        }
       });
   }
+
+  // ── View toggle wiring ────────────────────────────────────────────
+  function setView(view, opts) {
+    if (!VIEWS[view] || view === currentView) return;
+    currentView = view;
+    // Toggle visibility (use [hidden] attribute for simplicity)
+    $listView.hidden  = (view !== 'list');
+    $globeView.hidden = (view !== 'globe');
+    // Update aria on toggle buttons
+    var btns = document.querySelectorAll('.view-btn');
+    for (var i = 0; i < btns.length; i++) {
+      var on = btns[i].dataset.view === view;
+      btns[i].setAttribute('aria-pressed', on ? 'true' : 'false');
+    }
+    // Sync URL (?view=globe), without pushing history
+    if (!opts || !opts.fromPop) {
+      var p = new URLSearchParams(location.search);
+      if (view === 'list') p.delete('view'); else p.set('view', view);
+      var qs = p.toString();
+      history.replaceState({ game: current, view: view }, '',
+        location.pathname + (qs ? '?' + qs : ''));
+    }
+    // Lifecycle: tear down globe when leaving it
+    if (view !== 'globe') destroyGlobe();
+    // Re-render whatever's cached
+    if (latestEntries) {
+      renderCurrentView();
+    } else if (view === 'globe') {
+      // No data yet — leave the loading hint up; loadCurrent will kick it
+    }
+  }
+
+  var viewBtns = document.querySelectorAll('.view-btn');
+  for (var v = 0; v < viewBtns.length; v++) {
+    (function(b) {
+      b.setAttribute('aria-pressed', b.dataset.view === currentView ? 'true' : 'false');
+      b.addEventListener('click', function() { setView(b.dataset.view); });
+    })(viewBtns[v]);
+  }
+  // Apply initial visibility per ?view=
+  $listView.hidden  = (currentView !== 'list');
+  $globeView.hidden = (currentView !== 'globe');
+
+  // Resize the globe canvas alongside the host element. Debounce so
+  // a continuous drag-resize doesn't fire dozens of WebGL viewport sets.
+  var resizeTimer = null;
+  window.addEventListener('resize', function() {
+    if (!globeInstance) return;
+    if (resizeTimer) clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(function() {
+      if (!globeInstance) return;
+      var rect = $globeView.getBoundingClientRect();
+      var w = Math.max(1, Math.floor(rect.width));
+      var h = Math.max(1, Math.floor(rect.height));
+      try { globeInstance.resize(w, h); } catch (e) {}
+    }, 120);
+  }, { passive: true });
 
   // ── Tab wiring ────────────────────────────────────────────────────
   function setActive(gameId, opts) {
@@ -607,7 +848,9 @@
   }
   window.addEventListener('popstate', function() {
     var g = readInitialGame();
+    var v = readInitialView();
     if (g !== current) setActive(g, { fromPop: true });
+    if (v !== currentView) setView(v, { fromPop: true });
   });
 
   // Initial load
