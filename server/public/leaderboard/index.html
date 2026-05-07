@@ -251,10 +251,12 @@
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
     box-shadow: 0 20px 50px rgba(10, 10, 26, 0.6);
-    /* Hand all touch gestures to JS pointer events. Without this, the
-       browser claims two-finger pinch as page-zoom on mobile and the
-       globe never sees the second finger. */
-    touch-action: none;
+    /* pan-y lets vertical swipes scroll the page (so the globe doesn't
+       trap the user when it fills most of the phone viewport), while
+       horizontal drags still rotate (yaw) and two-finger pinches still
+       zoom. Tradeoff: no touch-driven pitch on mobile — yaw + zoom is
+       the useful subset for "find your country." */
+    touch-action: pan-y;
   }
   .globe-host[hidden] { display: none; }
   /* Hint while three.js + textures load on first globe-view activation. */
