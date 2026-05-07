@@ -35,11 +35,12 @@
   a:hover { color: #fff5b0; }
 
   /* ── Background layer (full-bleed, fixed). One canonical cross-game
-       backdrop instead of the earlier per-tab swap — the leaderboard
-       reads as a single destination rather than borrowing each game's
-       art. Currently using MM's bg-leaderboard.jpg as a placeholder
-       until Audrey's dedicated cross-game leaderboard painting (the
-       active commission) lands; only the URL needs to swap. ── */
+       backdrop — Audrey's dedicated leaderboard painting (summit vista
+       at magic-hour, creatures at the peak, stone laurel pedestal,
+       distant biome silhouettes). Replaces the earlier per-tab swap so
+       the leaderboard reads as a single destination, not as borrowed
+       art from one game or the other. Portrait variant kicks in on
+       narrow viewports. ── */
   .bg {
     position: fixed; inset: 0;
     z-index: -1;
@@ -48,13 +49,13 @@
     background-repeat: no-repeat;
     background-image:
       linear-gradient(180deg, rgba(10,10,26,0.45) 0%, rgba(10,10,26,0.65) 60%, rgba(10,10,26,0.92) 100%),
-      url('https://edmacomber.github.io/MisfitMonsters-Phaser/assets/backgrounds/bg-leaderboard.jpg');
+      url('https://edmacomber.github.io/MisfitMonsters-Phaser/assets/backgrounds/bg-leaderboard-mountain.jpg');
   }
   @media (orientation: portrait) and (max-width: 900px) {
     .bg {
       background-image:
         linear-gradient(180deg, rgba(10,10,26,0.45) 0%, rgba(10,10,26,0.65) 60%, rgba(10,10,26,0.92) 100%),
-        url('https://edmacomber.github.io/MisfitMonsters-Phaser/assets/backgrounds/bg-leaderboard-portrait.jpg');
+        url('https://edmacomber.github.io/MisfitMonsters-Phaser/assets/backgrounds/bg-leaderboard-mountain-portrait.jpg');
     }
   }
 
