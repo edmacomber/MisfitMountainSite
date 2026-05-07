@@ -234,23 +234,18 @@
   }
 
   /* ── Globe host ──
-     Square container that the globe.js canvas absolute-positions into.
-     Same panel-card gradient + border so the swap from list to globe
-     reads as a "different view of the same panel" rather than a
-     completely different surface. */
+     Square container the globe.js canvas absolute-positions into. No
+     background of its own — the globe floats free over the page-level
+     summit-vista backdrop instead of being tucked inside its own card,
+     so Audrey's painting reads through the corners of the bounding box
+     where the spherical globe doesn't reach. position: relative is the
+     only structural rule the globe canvas actually needs. */
   .globe-host {
     position: relative;
     width: 100%;
     aspect-ratio: 1 / 1;
     max-width: 760px;
     margin: 0 auto;
-    background: linear-gradient(180deg, rgba(26, 16, 40, 0.86) 0%, rgba(18, 10, 28, 0.86) 100%);
-    border: 1px solid rgba(156, 92, 255, 0.32);
-    border-radius: 16px;
-    overflow: hidden;
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    box-shadow: 0 20px 50px rgba(10, 10, 26, 0.6);
     /* pan-y lets vertical swipes scroll the page (so the globe doesn't
        trap the user when it fills most of the phone viewport), while
        horizontal drags still rotate (yaw) and two-finger pinches still
