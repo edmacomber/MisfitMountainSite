@@ -44,7 +44,12 @@
   .bg {
     position: fixed; inset: 0;
     z-index: -1;
-    background-position: center;
+    /* center-bottom anchors the painting's bottom edge to the viewport's
+       bottom edge so the subject anchors (creatures + pedestal at the
+       bottom of both portrait and landscape compositions) stay visible.
+       With plain "center", taller-than-painting viewports cropped them
+       off below the fold. */
+    background-position: center bottom;
     background-size: cover;
     background-repeat: no-repeat;
     background-image:
